@@ -1,0 +1,291 @@
+#!/usr/bin/python3
+#-*- coding: utf-8 -*-
+##Import library
+from importlib.resources import path
+from lib2to3.pgen2 import driver
+import os
+import sys
+import logging
+import time
+from datetime import datetime
+import random
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import ElementClickInterceptedException
+from selenium.common.exceptions import ScreenshotException
+
+config = {
+    'url': "http://localhost:3000/",
+}
+
+os.getcwd()
+
+##Set filename by datename
+log_filename = datetime.now().strftime("%Y-%m-%d_%H_%M_%S")+'test_SFL'
+log_path = 'logs/{filename}.log'.format(filename=log_filename)
+
+##Log basic
+logging.basicConfig(
+    filename = log_path,
+    filemode = 'a+',
+    level = logging.INFO,
+    format = '%(asctime)s-[%(process)d][%(thread)d]|[%(levelname)s]|[%(filename)s:%(lineno)d][%(funcName)s]|%(message)s'
+)
+
+##Create dictionary to fill in path
+web_path = {
+    ##trending tags section
+    'trending_tags_section' : "//div[@class='css-wk88i8']",
+    'search_input': "//input[@class='chakra-input css-7h6b7n']",
+    'search_button': "//div[@class='chakra-input__right-addon css-7nrq'][text()='Search']",
+
+    ##title
+    'trending_title': "//h2[@class='chakra-heading css-18j379d'][text()='Trending']",
+
+    ##article get the first data
+    'title_01': "(//div[@class='chakra-stack css-xerlbm']/h2[@class='chakra-heading css-18j379d'])[1]",
+    'score_01': "(//div[@class='css-j7qwjs']/p[@class='chakra-text css-tokvmb'][text()='Score'])[1]",
+    'score_val': "(//div[@class='css-j7qwjs']/p[@class='chakra-text css-tokvmb'][text()='Score']/following-sibling::*[1])[1]",
+    'answer_01': "(//div[@class='css-j7qwjs']/p[@class='chakra-text css-tokvmb'][text()='Answers'])[1]",
+    'answer_val': "(//div[@class='css-j7qwjs']/p[@class='chakra-text css-tokvmb'][text()='Answers']/following-sibling::*[1])[1]",
+    'view_01': "(//div[@class='css-j7qwjs']/p[@class='chakra-text css-tokvmb'][text()='Viewed'])[1]",
+    'view_val': "(//div[@class='css-j7qwjs']/p[@class='chakra-text css-tokvmb'][text()='Viewed']/following-sibling::*[1])[1]",
+    'img': "(//img[@class='chakra-avatar__img css-3a5bz2'])[1]",
+    'arthur': "(//div[@class='css-1od6a13'])[1]",
+
+    ##related tag
+    'exist_tag': "//span[@class='css-k6mmpf'][text()='java-8']",
+    'no_tags': "(//div[@class='chakra-alert css-1fqctm6'])[1]"
+}
+
+class TestStackFlowList():
+
+    def WebDriver(self):
+        '''
+        Set up driver
+        '''
+        options = webdriver.ChromeOptions()
+        options.add_argument("--start-maximized")
+        options.add_argument("--incognito")
+        self.driver = webdriver.Chrome("./chromedriver105", chrome_options=options)
+        self.wait = WebDriverWait(self.driver, 10)
+        driver = self.driver
+        driver.get(config['url'])
+        logging.info("=====Open WebDriver=====")
+        print("=====Open WebDriver=====")
+    
+    def ExceptionHandling(self, error_message):
+        '''
+        Handling selenium exceptions
+        '''
+        exc_type, exc_value, exc_traceback = sys.exc_info()
+        print ('exc_type:', exc_type)
+        print ('exc_value:', exc_value)
+        print ('exc_traceback:', exc_traceback)
+        ##Log error message
+        logging.exception(error_message)
+        self.TakeScreenshot()
+        self.driver.quit()
+        exit()
+    
+    def TakeScreenshot(self):
+        '''
+        Take a screenshot
+        '''
+        screenshot_filename = datetime.now().strftime("%Y-%m-%d_%H_%M_%S") + '_screenshot.png'
+        screenshot_path = 'logs/{filename}'.format(filename = screenshot_filename)
+        try:
+            self.driver.get_screenshot_as_file(screenshot_path)
+            logging.info('Take screenshot')
+        except ScreenshotException as screenshot_error:
+            logging.info('Can not take screenshot')
+            self.ExceptionHandling(screenshot_error)
+
+    def CheckElementExist(self, path):
+        '''
+        Check element exist
+        '''
+        try:
+            ##Find path exist or not
+            exist_element = self.wait.until(EC.visibility_of_element_located((By.XPATH, path)))
+            logging.info('{path} exist'.format(path = path))
+            print("Check element", path, "exist")
+        except NoSuchElementException as non_element_error:
+            logging.error('{path} not exists'.format(path = path))
+            self.ExceptionHandling(non_element_error)
+        except Exception as except_error:
+            logging.error('Something wrong in {path} '.format(path = path))
+            self.ExceptionHandling(except_error)
+        time.sleep(random.randint(3, 5))
+        return exist_element
+    
+    def CheckElementNotExist(self, path):
+        '''
+        Check element not exist
+        '''
+        try:
+            ##Find path not exist
+            not_exist_element = self.wait.until_not(EC.visibility_of_element_located((By.XPATH, path)))
+            logging.info('{path} not exist'.format(path = path))
+            print("Check element", path, "not exist")
+        except NoSuchElementException as non_element_error:
+            logging.error('{path} not exists'.format(path = path))
+            self.ExceptionHandling(non_element_error)
+        except Exception as except_error:
+            logging.error('Something wrong in {path} '.format(path = path))
+            self.ExceptionHandling(except_error)
+        return not_exist_element
+    
+    def ClickElementAction(self, path):
+        '''
+        Check button clickable
+        '''
+        try:
+            ##Find path and click it
+            click_element = self.wait.until(EC.element_to_be_clickable((By.XPATH, path)))
+            click_element.click()
+            logging.info('Click {path}'.format(path = path))
+            print("Click", path)
+        except ElementClickInterceptedException as intercepted_error:
+            logging.error('{path} not clickable'.format(path = path))
+            self.ExceptionHandling(intercepted_error)
+        except Exception as except_error:
+            logging.error('Something wrong in {path} '.format(path = path))
+            self.ExceptionHandling(except_error)
+        return 
+    
+    def InputValue(self, text_field, value):
+        '''
+        Input value
+        '''
+        try:
+            ##Find path and input value
+            self.driver.find_element(By.XPATH, text_field).clear()
+            input_element = self.driver.find_element(By.XPATH, text_field).send_keys(value)
+            logging.info('Input {value} in {text_field}'.format(value = value, text_field = text_field))
+            print("Input value in", text_field)
+        except NoSuchElementException as non_element_error:
+            logging.error('{path} not exist'.format(path = text_field))
+            self.ExceptionHandling(non_element_error)
+        except Exception as except_error:
+            logging.error('Something wrong in {path} '.format(path = text_field))
+            self.ExceptionHandling(except_error)
+        return input_element
+
+    def SearchStackFlowList(self):
+        '''
+        Check search section
+        '''
+        logging.info("=====Start SearchStackFlowList=====")
+        print("=====Start SearchStackFlowList=====")
+
+        # open driver
+        self.WebDriver()
+
+        # check search bar exists
+        self.CheckElementExist(web_path['trending_tags_section'])
+        self.CheckElementExist(web_path['search_input'])
+        self.CheckElementExist(web_path['search_button'])
+        
+        # can find data
+        search_keyword = "java"
+        self.InputValue(web_path['search_input'], search_keyword)
+        print("search keyword:", search_keyword)
+        self.CheckElementExist(web_path['title_01'])
+        self.CheckElementExist(web_path['score_01'])
+        self.CheckElementExist(web_path['answer_01'])
+
+        # can click related tags
+        self.ClickElementAction(web_path['exist_tag'])
+        print("Click related tag")
+        self.CheckElementExist(web_path['title_01'])
+        self.CheckElementExist(web_path['score_01'])
+        self.CheckElementExist(web_path['answer_01'])
+
+        # can't find data
+        search_keyword = "Java"
+        self.InputValue(web_path['search_input'], search_keyword)
+        print("search keyword:", search_keyword)
+        self.CheckElementExist(web_path['no_tags'])
+        self.CheckElementNotExist(web_path['title_01'])
+        self.CheckElementNotExist(web_path['score_01'])
+        self.CheckElementNotExist(web_path['answer_01'])
+
+        logging.info("=====End SearchStackFlowList=====")
+        print("=====End SearchStackFlowList=====")
+
+        # close driver
+        self.tearDown()
+    
+    def CheckStackFlowList(self):
+        '''
+        Check the first data in list section
+        '''
+        logging.info("=====Start CheckStackFlowList=====")
+        print("=====Start CheckStackFlowList=====")
+        # open driver
+        self.WebDriver()
+
+        # check list item exist
+        self.CheckElementExist(web_path['trending_title'])
+        self.CheckElementExist(web_path['title_01'])
+        self.CheckElementExist(web_path['score_01'])
+        self.CheckElementExist(web_path['score_val'])
+        self.CheckElementExist(web_path['answer_01'])
+        self.CheckElementExist(web_path['answer_val'])
+        self.CheckElementExist(web_path['view_01'])
+        self.CheckElementExist(web_path['view_val'])
+        self.CheckElementExist(web_path['img'])
+        self.CheckElementExist(web_path['arthur'])
+
+        # click one of the list item
+        self.ClickElementAction(web_path['title_01'])
+
+        logging.info("=====End CheckStackFlowList=====")
+        print("=====End CheckStackFlowList=====")
+
+        # close driver
+        self.tearDown()
+    
+    def ScrollDownStackFlowList(self):
+        '''
+        Check the first data in list section
+        '''
+        logging.info("=====Start CheckStackFlowList=====")
+        print("=====Start CheckStackFlowList=====")
+        # open driver and go to url
+        self.WebDriver()
+
+        # scroll down page and check search bar exists
+        time.sleep(15)
+        logging.info("Wait 15 Seconds")
+
+        self.driver.execute_script("window.scrollBy(0,300)")
+        logging.info("Scroll down page")
+
+        self.CheckElementExist(web_path['trending_tags_section'])
+        self.CheckElementExist(web_path['search_input'])
+        self.CheckElementExist(web_path['search_button'])
+
+        logging.info("=====End CheckStackFlowList=====")
+        print("=====End CheckStackFlowList=====")
+        # close driver
+        self.tearDown()
+
+    def tearDown(self):
+        self.driver.quit()
+        logging.info("=====Close WebDriver=====")
+        print("=====Close WebDriver=====")
+
+if __name__ == "__main__":
+    logging.info("=====Start Test=====")
+
+    Test = TestStackFlowList()
+    Test.SearchStackFlowList()
+    # Test.CheckStackFlowList()
+    # Test.ScrollDownStackFlowList()
+
+    logging.info("=====End Test=====")
