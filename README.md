@@ -43,4 +43,4 @@ yarn start
 ## Execute Python file
 1. Open Termimal
 2. Switch path to **qa-frontend-repo**
-3. Execute file ```python3 testing```
+3. Execute ```python3 testing```
