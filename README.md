@@ -12,7 +12,7 @@ Please add files in testSFL repo into qa-frontend-repo
 git clone git@github.com:dannnyliang/stackoverflow-listing.git && cd stackoverflow-listing && yarn
 ```
 
-Check Chrome version, default 105
+Check Chrome version, default 105. 
 If your version is different, please download new Chromedriver. 
 
 [Chromedriver download link](https://chromedriver.chromium.org/downloads)
