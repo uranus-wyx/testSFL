@@ -44,3 +44,4 @@ yarn start
 1. Open Termimal
 2. Switch path to **qa-frontend-repo**
 3. Execute ```python3 testing```
+4. Logs data in logs folder
