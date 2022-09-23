@@ -13,6 +13,7 @@ git clone git@github.com:dannnyliang/stackoverflow-listing.git && cd stackoverfl
 ```
 
 Check Chrome version, default 105. 
+
 If your version is different, please download new Chromedriver. 
 
 [Chromedriver download link](https://chromedriver.chromium.org/downloads)
