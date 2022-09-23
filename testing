@@ -9,6 +9,7 @@ import logging
 import time
 from datetime import datetime
 import random
+import unittest
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -65,9 +66,9 @@ web_path = {
     'no_tags': "(//div[@class='chakra-alert css-1fqctm6'])[1]"
 }
 
-class TestStackFlowList():
+class TestStackFlowList(unittest.TestCase):
 
-    def WebDriver(self):
+    def setUp(self):
         '''
         Set up driver
         '''
@@ -76,6 +77,8 @@ class TestStackFlowList():
         options.add_argument("--incognito")
         self.driver = webdriver.Chrome("./chromedriver105", chrome_options=options)
         self.wait = WebDriverWait(self.driver, 10)
+
+    def WebDriver(self):
         driver = self.driver
         driver.get(config['url'])
         logging.info("=====Open WebDriver=====")
@@ -179,7 +182,7 @@ class TestStackFlowList():
             self.ExceptionHandling(except_error)
         return input_element
 
-    def SearchStackFlowList(self):
+    def test_SearchStackFlowList(self):
         '''
         Check search section
         '''
@@ -220,11 +223,8 @@ class TestStackFlowList():
 
         logging.info("=====End SearchStackFlowList=====")
         print("=====End SearchStackFlowList=====")
-
-        # close driver
-        self.tearDown()
     
-    def CheckStackFlowList(self):
+    def test_CheckStackFlowList(self):
         '''
         Check the first data in list section
         '''
@@ -250,11 +250,8 @@ class TestStackFlowList():
 
         logging.info("=====End CheckStackFlowList=====")
         print("=====End CheckStackFlowList=====")
-
-        # close driver
-        self.tearDown()
     
-    def ScrollDownStackFlowList(self):
+    def test_ScrollDownStackFlowList(self):
         '''
         Check the first data in list section
         '''
@@ -276,8 +273,6 @@ class TestStackFlowList():
 
         logging.info("=====End CheckStackFlowList=====")
         print("=====End CheckStackFlowList=====")
-        # close driver
-        self.tearDown()
 
     def tearDown(self):
         self.driver.quit()
@@ -287,9 +282,6 @@ class TestStackFlowList():
 if __name__ == "__main__":
     logging.info("=====Start Test=====")
 
-    Test = TestStackFlowList()
-    Test.SearchStackFlowList()
-    # Test.CheckStackFlowList()
-    # Test.ScrollDownStackFlowList()
+    unittest.main()
 
     logging.info("=====End Test=====")
